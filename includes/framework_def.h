@@ -6,13 +6,23 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
-#ifdef __MPD__
 
-#include "../exp_cuts/mpd/mpd_base_macro.C"
+
+#define CBM
+
+
+NicaQACoreManager* GetCoreManager()
+{
+#ifdef CBM
+  return new CbmQACoreManager();
+#else
+#ifdef MPD
+
+#else
+#ifdef BMN
 
 #endif
-#ifdef __CBM__
-
-
-
 #endif
+  return nullptr;
+#endif
+}
