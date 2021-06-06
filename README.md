@@ -10,7 +10,7 @@ By default framework_def.h contains method GetCoreManager that should return QAC
 This is a macro that estimate maximal efficiency of reconstructed charged pions, charged kaons and (anti) protons. The efficiency is defined as a: number of reconstructed primary particles of given type divided by total number of primary particles of given type. Efficiency is ploted as a function of transverse momentum and pseudorapidity.
 #### primary_efficiency2
 This is a macro that estimate maximal efficiency of reconstructed charged pions, charged kaons and (anti) protons. In contrast to primary_efficiency macro takes into account only reconstructed tracks that passed track cuts (not all reconstructed tracks). Efficiency is ploted as a function of transverse momentum and pseudorapidity.
-##$primary
+### primary
 This is macro used to estimation of cuts for selection of primary particles. This macro presents as function of DCAxy/DCAz DCAxy-cut/DCAz-cut the fraction of primary particles, the total number of accepted primary particles and a purity of particles as a function of DCA.
-#$#purity
+### purity
 macro for optimization of m2(p) cut. It represents the purity of charged hadrons as a function of m2(p-signed), also presents similar plot after application of PID-cuts, presents particle purity as function of signed momentum.
