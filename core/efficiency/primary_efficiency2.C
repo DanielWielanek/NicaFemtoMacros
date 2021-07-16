@@ -17,48 +17,44 @@
  * macro to show efficiency of primary tracks reconstruction, takes into account detector's effects
  */
 NicaQACoreManager* mngr;
-void SetMcCuts(NicaTrackAna* ana, TString opt = "")
+void SetMcCuts(NicaTrackAna* ana, NicaQACoreManager::ePidCut Pid, TString opt = "")
 {
   NicaTrackPdgCut pid;
 
   NicaQACoreManager::eParticleType type = NicaQACoreManager::eParticleType::kPrimaryOnly;
 
-  for (int i = 0; i < 6; i++) {
-    mngr->SetMcTrackCut(ana, mngr->ToPid(i), type, Form("{%i}+fast+%s", i, opt.Data()));
-  }
-
+  mngr->SetMcTrackCut(ana, Pid, type, "fast");
   NicaTrackPtCut pt;
   NicaTrackEtaCut eta;
-  TString patt = "{6x1}";
-  if (opt == "im") patt = "{6x1}+im";
-  ana->AddCut(pt, patt);
-  ana->AddCut(eta, patt);
+  ana->AddCut(pt, opt);
+  ana->AddCut(eta, opt);
   NicaCutMonitorXY mon(eta.CutName(opt), 0, pt.CutName(opt), 0);
   mon.SetXaxis(200, mngr->GetEtaMin(), mngr->GetEtaMax());
   mon.SetYaxis(200, mngr->GetPtMin(), mngr->GetPtMax());
   ana->AddCutMonitor(mon);
 }
-void SetRecoCuts(NicaTrackAna* ana)
+void SetRecoCuts(NicaTrackAna* ana, NicaQACoreManager::ePidCut Pid)
 {
-  SetMcCuts(ana, "im");
-  for (int i = 0; i < 6; i++) {
-    mngr->SetRecoTrackCut(ana, mngr->ToPid(i), NicaQACoreManager::eParticleType::kPrimaryOnly, "re");
-  }
+  SetMcCuts(ana, Pid, "im");
+  mngr->SetRecoTrackCut(ana, Pid, NicaQACoreManager::eParticleType::kPrimaryOnly, "re");
 }
 void primary_efficiency2(TString outFile  = "data.root",
                          TString simFile  = "/media/daniel/Seagate_Expansion_Drive/mass_prod/cbm/merged.root",
                          TString recoFile = "", TString parFile = "")
 {
+
+  NicaQACoreManager::ePidCut Pid = NicaQACoreManager::ePidCut::kPionPlus;
+
   mngr            = GetCoreManager();
   FairRunAna* run = mngr->GetRunAna(outFile, simFile, recoFile, parFile);
 
   NicaTrackAna* simProd = new NicaTrackAna();
   simProd->SetFormat(mngr->GetFormat(NicaQACoreManager::eFormatType::kSim));
-  SetMcCuts(simProd);
+  SetMcCuts(simProd, Pid);
 
   NicaTrackAna* recoProd = new NicaTrackAna();
   recoProd->SetFormat(mngr->GetFormat(NicaQACoreManager::eFormatType::kComplex));
-  SetRecoCuts(recoProd);
+  SetRecoCuts(recoProd, Pid);
 
   run->AddTask(simProd);
   run->AddTask(recoProd);
