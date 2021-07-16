@@ -17,19 +17,19 @@
 
 NicaQACoreManager* mngr;
 
-void SetRecoCuts(NicaTrackAna* ana, Bool_t raw)
+void SetRecoCuts(NicaTrackAna* ana, NicaQACoreManager::ePidCut PidType, Bool_t raw)
 {
   if (raw) { mngr->UsePidCut(kFALSE); }
   else {
     mngr->UsePidCut(kTRUE);
   }
   NicaTrackPdgBinCut binCut;
-  ana->AddCut(binCut, "im+{6x1}");
+  ana->AddCut(binCut, "im");
   NicaTrackBasicToFCut tof;
   tof.SetMinimum(-1E+9, tof.Mass2());
-  ana->AddCut(tof, "{6x1}+re");
+  ana->AddCut(tof, "re");
   NicaTrackPSignedCut p;
-  ana->AddCut(p, "{6x1}+re");
+  ana->AddCut(p, "re");
   NicaCutMonitorXYZ mon3d(p.CutName("re"), 0, tof.CutName("re"), tof.Mass2(), binCut.CutName("im"), 0);
 
   mon3d.SetXaxis(200, -pRange, pRange);
@@ -38,9 +38,7 @@ void SetRecoCuts(NicaTrackAna* ana, Bool_t raw)
   ana->AddCutMonitor(mon3d);
 
   NicaQACoreManager::eParticleType type = NicaQACoreManager::eParticleType::kPrimaryOnly;
-  for (int i = 0; i < 6; i++) {
-    mngr->SetRecoTrackCut(ana, mngr->ToPid(i), type, Form("{%i}+re", i));
-  }
+  mngr->SetRecoTrackCut(ana, PidType, type, "re");
 }
 
 void purity(TString outFile = "data.root",
@@ -48,13 +46,16 @@ void purity(TString outFile = "data.root",
             TString parFile = "")
 {
 
-  mngr            = GetCoreManager();
+  NicaQACoreManager::ePidCut PidType = NicaQACoreManager::ePidCut::kPionPlus;
+
+  mngr = GetCoreManager();
+
   FairRunAna* run = mngr->GetRunAna(outFile, simFile, recoFile, parFile);
 
   NicaTrackAna* recoRaw = new NicaTrackAna();
-  SetRecoCuts(recoRaw, kTRUE);
+  SetRecoCuts(recoRaw, PidType, kTRUE);
   NicaTrackAna* recoCorrect = new NicaTrackAna();
-  SetRecoCuts(recoCorrect, kFALSE);
+  SetRecoCuts(recoCorrect, PidType, kFALSE);
 
   recoRaw->SetFormat(mngr->GetFormat(NicaQACoreManager::eFormatType::kComplex, NicaQACoreManager::eAnaType::kDefault));
   recoCorrect->SetFormat(

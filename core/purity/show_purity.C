@@ -49,9 +49,54 @@ public:
   virtual ~ExtractedPids() {};
 };
 
+void SetAxis(TH1* h, Int_t charge)
+{
+  Int_t bins;
+  Double_t min, max;
+  NicaStd::GetAxisPar(*h, bins, min, max, "x");
+  if (charge == 1) { h->GetXaxis()->SetRangeUser(0, max); }
+  else {
+    h->GetXaxis()->SetRangeUser(min, 0);
+  }
+}
+
 
 void show_purity(TString inFile = "data.root")
 {
+
+  NicaQACoreManager::ePidCut PidType = NicaQACoreManager::ePidCut::kPionPlus;
+
+  Double_t min, max;
+  Int_t bins;
+  Int_t correctId = 0;
+  Int_t charge    = 0;
+  switch (PidType) {
+    case NicaQACoreManager::ePidCut::kPionPlus: {
+      correctId = 0;
+      charge    = 1;
+    } break;
+    case NicaQACoreManager::ePidCut::kPionMinus: {
+      correctId = 1;
+      charge    = -1;
+    } break;
+    case NicaQACoreManager::ePidCut::kKaonPlus: {
+      correctId = 2;
+      charge    = 1;
+    } break;
+    case NicaQACoreManager::ePidCut::kKaonMinus: {
+      correctId = 3;
+      charge    = -1;
+    } break;
+    case NicaQACoreManager::ePidCut::kProton: {
+      correctId = 4;
+      charge    = 1;
+    } break;
+    case NicaQACoreManager::ePidCut::kAntiProton: {
+      correctId = 5;
+      charge    = -1;
+    } break;
+    default: break;
+  }
   gStyle->SetOptStat(0);
   gStyle->SetPalette(kRainBow);
   const Int_t mid   = 7;
@@ -59,77 +104,75 @@ void show_purity(TString inFile = "data.root")
   for (int i = 0; i < 6; i++)
     enumPids[i] = enumPids[i] + mid;
 
-  NicaAnaFile* file       = new NicaAnaFile(inFile);
-  ExtractedPids** RawPids = new ExtractedPids*[6];
-  ExtractedPids** IdPids  = new ExtractedPids*[6];
-  for (int i = 0; i < 6; i++) {
-    TH3D* t = (TH3D*) file->GetHistogramPassed(ENicaCutUpdate::kTrackUpdate, i, 0);
+  NicaAnaFile* file = new NicaAnaFile(inFile);
 
-    RawPids[i] = new ExtractedPids(t);
-  }
+  TH3D* t                = (TH3D*) file->GetHistogramPassed(ENicaCutUpdate::kTrackUpdate, 0, 0);
+  ExtractedPids* RawPids = new ExtractedPids(t);
   file->SwitchPackage(1);
-  for (int i = 0; i < 6; i++) {
-    TH3D* t   = (TH3D*) file->GetHistogramPassed(ENicaCutUpdate::kTrackUpdate, i, 0);
-    IdPids[i] = new ExtractedPids(t);
-  }
+  t                     = (TH3D*) file->GetHistogramPassed(ENicaCutUpdate::kTrackUpdate, 0, 0);
+  ExtractedPids* IdPids = new ExtractedPids(t);
+
 
   TCanvas* c = new TCanvas();
-  c->Divide(3, 2);
-  for (int i = 0; i < 6; i++) {
-    c->cd(i + 1);
-    TH2D* sum = (TH2D*) RawPids[i]->GetTH2(1)->Clone();
-    for (int iPid = 2; iPid <= 14; iPid++)
-      sum->Add(RawPids[i]->GetTH2(iPid));
-    TH2D* correct = (TH2D*) RawPids[i]->GetTH2(enumPids[i])->Clone();
-    correct->Divide(sum);
-    correct->Scale(100);
-    correct->SetMinimum(0);
-    correct->SetMaximum(100);
-    TString title = Form("Raw purity of %s", NamesHadrons[i].Data());
-    correct->SetTitle(title);
-    correct->Draw("colz");
-  }
+  c->Divide(2, 2);
 
-  c = new TCanvas();
-  c->Divide(3, 2);
-  for (int i = 0; i < 6; i++) {
-    c->cd(i + 1);
-    TH2D* sum = (TH2D*) IdPids[i]->GetTH2(1)->Clone();
-    for (int iPid = 2; iPid <= 14; iPid++)
-      sum->Add(IdPids[i]->GetTH2(iPid));
-    TH2D* correct = (TH2D*) IdPids[i]->GetTH2(enumPids[i])->Clone();
-    correct->Divide(sum);
-    correct->Scale(100);
-    correct->SetMinimum(0);
-    correct->SetMaximum(100);
-    TString title = Form("Cutted purity of %s", NamesHadrons[i].Data());
-    correct->SetTitle(title);
-    correct->Draw("colz");
-  }
+  c->cd(1);
+  TH2D* sum = (TH2D*) RawPids->GetTH2(1)->Clone();
+  for (int iPid = 2; iPid <= 14; iPid++)
+    sum->Add(RawPids->GetTH2(iPid));
+  TH2D* correct = (TH2D*) RawPids->GetTH2(enumPids[correctId])->Clone();
+  correct->Divide(sum);
+  correct->Scale(100);
+  correct->SetMinimum(0);
+  correct->SetMaximum(100);
+  TString title = "Raw purity";
+  correct->SetTitle(title);
+  SetAxis(correct, charge);
+  correct->Draw("colz");
+  gPad->SetGridx();
+  gPad->SetGridy();
 
 
-  TCanvas* c2 = new TCanvas();
-  c2->Divide(3, 2);
+  c->cd(2);
+  sum = (TH2D*) IdPids->GetTH2(1)->Clone();
+  for (int iPid = 2; iPid <= 14; iPid++)
+    sum->Add(IdPids->GetTH2(iPid));
+  correct = (TH2D*) IdPids->GetTH2(enumPids[correctId])->Clone();
+  correct->Divide(sum);
+  correct->Scale(100);
+  correct->SetMinimum(0);
+  correct->SetMaximum(100);
+  title = "Cutted purity";
+  correct->SetTitle(title);
+  correct->Draw("colz");
+  SetAxis(correct, charge);
+  correct->Draw("colz");
+  gPad->SetGridx();
+  gPad->SetGridy();
+
+  c->cd(3);
   TLegend* leg = new TLegend(0.1, 0.1, 0.9, 0.9);
-  for (int i = 0; i < 6; i++) {
-    c2->cd(i + 1);
-    TH1D* sum = IdPids[i]->GetTH1(1);
-    for (int iPid = 2; iPid <= 14; iPid++)
-      sum->Add(IdPids[i]->GetTH1(iPid));
-    for (int iPid = 1; iPid <= 14; iPid++) {
-      TH1D* slice = IdPids[i]->GetTH1(iPid);
-      slice->Divide(sum);
-      slice->Scale(100);
-      slice->SetMarkerColor(colz[iPid]);
-      slice->SetLineColor(colz[iPid]);
-      slice->SetMarkerStyle(marker[iPid]);
-      slice->SetMinimum(0);
-      slice->SetMaximum(100);
-      slice->Draw("SAME");
-      slice->SetTitle(NamesHadrons[i]);
-      if (i == 0) { leg->AddEntry(slice, NamesAll[iPid], "LP"); }
-    }  //
-  }
-  TCanvas* l = new TCanvas();
+  TH1D* sum1   = IdPids->GetTH1(1);
+  for (int iPid = 2; iPid <= 14; iPid++)
+    sum1->Add(IdPids->GetTH1(iPid));
+  for (int iPid = 1; iPid <= 14; iPid++) {
+    TH1D* slice = IdPids->GetTH1(iPid);
+    slice->Divide(sum1);
+    slice->Scale(100);
+    slice->SetMarkerColor(colz[iPid]);
+    slice->SetLineColor(colz[iPid]);
+    slice->SetMarkerStyle(marker[iPid]);
+    slice->SetMinimum(0);
+    slice->SetMaximum(100);
+    slice->Draw("SAME");
+    slice->SetTitle(NamesHadrons[correctId]);
+    leg->AddEntry(slice, NamesAll[iPid], "LP");
+    if (iPid == 1) {
+      gPad->SetGridx();
+      gPad->SetGridy();
+      SetAxis(slice, charge);
+    }
+  }  //
+  c->cd(4);
   leg->Draw();
 }
