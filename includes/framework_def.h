@@ -8,7 +8,7 @@
  */
 
 
-#define CBM
+#define MPD
 
 
 NicaQACoreManager* GetCoreManager()
@@ -17,7 +17,7 @@ NicaQACoreManager* GetCoreManager()
   return new CbmQACoreManager();
 #else
 #ifdef MPD
-
+  return new MpdQACoreManager();
 #else
 #ifdef BMN
 
