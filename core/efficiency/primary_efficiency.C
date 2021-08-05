@@ -24,7 +24,11 @@ void SetMcCuts(NicaTrackAna* ana, NicaQACoreManager::ePidCut Pid, TString opt = 
   NicaTrackPdgCut pid;
 
   NicaQACoreManager::eParticleType type = NicaQACoreManager::eParticleType::kPrimaryOnly;
-  mngr->SetMcTrackCut(ana, Pid, type, "fast");
+  if (opt == "im") { mngr->SetMcTrackCut(ana, Pid, type, "fast+im"); }
+  else {
+    mngr->SetMcTrackCut(ana, Pid, type, "fast");
+  }
+
 
   NicaTrackPtCut pt;
   NicaTrackEtaCut eta;
