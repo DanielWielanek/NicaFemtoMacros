@@ -27,6 +27,7 @@ void show_primary_efficiency2(TString inFile = "data.root")
   file->SwitchPackage(1);
   TH2D* recoHisto = (TH2D*) file->GetHistogramPassed(ENicaCutUpdate::kTrackUpdate, 0, 0);
 
+
   TCanvas* c = new TCanvas();
   recoHisto->Divide(mcHisto);
   recoHisto->SetMinimum(0);

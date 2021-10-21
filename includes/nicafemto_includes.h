@@ -12,14 +12,18 @@
 #include "FairRunAna.h"
 
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH3D.h>
 #include <THStack.h>
 #include <TLegend.h>
+#include <TMultiGraph.h>
 #include <TPad.h>
 #include <TString.h>
 #include <TStyle.h>
+
+#include <iostream>
 
 #include "NicaAnaFile.h"
 #include "NicaComplexTrack.h"
@@ -34,12 +38,15 @@
 #include "NicaEvent.h"
 #include "NicaEventAna.h"
 #include "NicaEventVertexCut.h"
+#include "NicaFemto1DCF.h"
 #include "NicaFemtoBasicAna.h"
 #include "NicaFemtoConst.h"
 #include "NicaFemtoPair.h"
 #include "NicaFemtoPairKinematics.h"
 #include "NicaMCTrack.h"
+#include "NicaMultiGraph.h"
 #include "NicaQACoreManager.h"
+#include "NicaSplines.h"
 #include "NicaTofPropertyMonitor.h"
 #include "NicaTrackAna.h"
 #include "NicaTrackBasicMCCut.h"

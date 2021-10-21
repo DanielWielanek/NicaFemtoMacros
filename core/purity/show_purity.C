@@ -151,13 +151,38 @@ void show_purity(TString inFile = "data.root")
   gPad->SetGridy();
 
   c->cd(3);
-  TLegend* leg = new TLegend(0.1, 0.1, 0.9, 0.9);
-  TH1D* sum1   = IdPids->GetTH1(1);
+
+  auto drawPurity = [](TH1D* Pids) {
+
+  };
+  TH1D* sum1 = RawPids->GetTH1(1);
   for (int iPid = 2; iPid <= 14; iPid++)
-    sum1->Add(IdPids->GetTH1(iPid));
+    sum1->Add(RawPids->GetTH1(iPid));
+  for (int iPid = 1; iPid <= 14; iPid++) {
+    TH1D* slice = RawPids->GetTH1(iPid);
+    slice->Divide(sum1);
+    slice->Scale(100);
+    slice->SetMarkerColor(colz[iPid]);
+    slice->SetLineColor(colz[iPid]);
+    slice->SetMarkerStyle(marker[iPid]);
+    slice->SetMinimum(0);
+    slice->SetMaximum(100);
+    slice->Draw("SAME");
+    slice->SetTitle(NamesHadrons[correctId]);
+    if (iPid == 1) {
+      gPad->SetGridx();
+      gPad->SetGridy();
+      SetAxis(slice, charge);
+    }
+  }  //
+  c->cd(4);
+  TLegend* leg = new TLegend(0.1, 0.1, 0.9, 0.9);
+  TH1D* sum2   = IdPids->GetTH1(1);
+  for (int iPid = 2; iPid <= 14; iPid++)
+    sum2->Add(IdPids->GetTH1(iPid));
   for (int iPid = 1; iPid <= 14; iPid++) {
     TH1D* slice = IdPids->GetTH1(iPid);
-    slice->Divide(sum1);
+    slice->Divide(sum2);
     slice->Scale(100);
     slice->SetMarkerColor(colz[iPid]);
     slice->SetLineColor(colz[iPid]);
@@ -173,6 +198,8 @@ void show_purity(TString inFile = "data.root")
       SetAxis(slice, charge);
     }
   }  //
-  c->cd(4);
+
+
+  TCanvas* c2 = new TCanvas("legend", "legend", 400, 400, 400, 400);
   leg->Draw();
 }
